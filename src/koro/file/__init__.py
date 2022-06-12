@@ -13,7 +13,7 @@ class Location:
         self._path = abspath(path)
 
     def __bool__(self) -> bool:
-        """Whether this file location is accessible."""
+        """Whether this file location is accessible and exists."""
         return exists(self.path)
 
     def delete(self) -> None:

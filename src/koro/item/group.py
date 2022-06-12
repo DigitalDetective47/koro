@@ -9,7 +9,10 @@ _L = TypeVar("_L", bound=Level)
 
 
 class Group(ABC, Generic[_L], Sequence[_L]):
-    """Note that levels are 0-indexed within this interface, but 1-indexed in-game."""
+    """A group of 20 levels.
+    Note that levels are 0-indexed within this interface, but 1-indexed in-game.
+    """
+
     __slots__ = ()
 
     def fill_mask(self) -> Sequence[bool]:
