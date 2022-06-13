@@ -6,10 +6,10 @@ from re import fullmatch
 from typing import Final, Optional, SupportsIndex, TypeGuard, overload
 from zipfile import ZipFile, ZipInfo
 
-from item.group import Group
-from item.level import Level, LevelNotFoundError
+from ..item.group import Group
+from ..item.level import Level, LevelNotFoundError
 
-from file import Location
+from . import Location
 
 __all__ = ["ZipGroup", "ZipLevel"]
 

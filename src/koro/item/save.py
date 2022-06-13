@@ -3,7 +3,7 @@ from collections.abc import Iterator, Mapping
 from enum import Enum, unique
 from typing import Generic, TypeGuard, TypeVar
 
-from item.group import Group
+from .group import Group
 
 _G = TypeVar("_G", bound=Group)
 

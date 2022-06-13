@@ -2,7 +2,7 @@ from os.path import getsize
 
 from item.level import Level, LevelNotFoundError
 
-from file import Location
+from . import Location
 
 __all__ = ["LvlLevel"]
 

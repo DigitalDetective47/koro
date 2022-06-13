@@ -3,7 +3,7 @@ from collections.abc import Iterable, Sequence
 from itertools import filterfalse
 from typing import Final, Generic, Optional, TypeVar
 
-from item.level import Level, LevelNotFoundError
+from .level import Level, LevelNotFoundError
 
 _L = TypeVar("_L", bound=Level)
 

@@ -4,11 +4,11 @@ from os import SEEK_CUR
 from os.path import abspath, dirname, isfile, join
 from typing import Final, Optional, SupportsIndex, TypeGuard, overload
 
-from item.group import Group
-from item.level import Level, LevelNotFoundError
-from item.save import Page, Save
+from ..item.group import Group
+from ..item.level import Level, LevelNotFoundError
+from ..item.save import Page, Save
 
-from file import Location
+from . import Location
 
 _BLOCK_SIZE: Final[int] = 2048
 _EMPTY_BLOCK: Final[bytes] = b"\x00" * _BLOCK_SIZE
