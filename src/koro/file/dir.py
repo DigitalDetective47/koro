@@ -36,7 +36,7 @@ class DirLevel(Level):
             return f.read(1) != b"\x00"
 
     def delete(self) -> None:
-        with open(self._path, "rb") as f:
+        with open(self._path, "r+b") as f:
             f.seek(self._offset)
             more: bool = f.read(1) != b"\x00"
             if more:
