@@ -11,12 +11,12 @@ class LvlLevelNotFoundError(FileNotFoundError, LevelNotFoundError):
     pass
 
 
-class LvlLevel(Level, Location):
+class LvlLevel(Location, Level):
     __slots__ = ()
 
     def delete(self) -> None:
         try:
-            return Location.delete(self)
+            return super().delete()
         except FileNotFoundError as e:
             raise LvlLevelNotFoundError(*e.args)
 
