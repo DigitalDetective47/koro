@@ -16,7 +16,7 @@ class Group(ABC, Generic[_L], Sequence[_L]):
     __slots__ = ()
 
     def fill_mask(self) -> Sequence[bool]:
-        """Return which level IDs within this set exist."""
+        """Return which level IDs within this Group exist."""
         return [bool(l) for l in self]
 
     def __len__(self) -> int:
@@ -36,7 +36,8 @@ class Group(ABC, Generic[_L], Sequence[_L]):
 
     def write(self, new_content: Iterable[Optional[bytes]], /) -> None:
         """Replace the contents of this Group with the specified new content. None values will empty the slot they correspond to."""
-        for src, dest in filterfalse(
-            lambda x: x[0] is None, zip(new_content, self, strict=True)
-        ):
-            dest.write(src)
+        for src, dest in zip(new_content, self, strict=True):
+            if src is None:
+                dest.delete()
+            else:
+                dest.write(src)
