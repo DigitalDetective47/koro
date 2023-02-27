@@ -1,6 +1,5 @@
 from abc import ABC
 from collections.abc import Iterable, Sequence
-from itertools import filterfalse
 from typing import Final, Generic, Optional, TypeVar
 
 from .level import Level, LevelNotFoundError
@@ -38,6 +37,9 @@ class Group(ABC, Generic[_L], Sequence[_L]):
         """Replace the contents of this Group with the specified new content. None values will empty the slot they correspond to."""
         for src, dest in zip(new_content, self, strict=True):
             if src is None:
-                dest.delete()
+                try:
+                    dest.delete()
+                except LevelNotFoundError:
+                    pass
             else:
                 dest.write(src)

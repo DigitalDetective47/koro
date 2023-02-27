@@ -95,7 +95,7 @@ class ZipLevel(Level):
 
     def write(self, new_content: bytes, /) -> None:
         contents: Final[dict[ZipInfo, bytes]] = {}
-        with ZipFile(self.path) as a:
+        with ZipFile(self.path, "r+") as a:
             for info in filterfalse(
                 lambda info: info.filename == self.fn, a.infolist()
             ):
