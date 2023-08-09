@@ -4,17 +4,22 @@ from operator import index
 from os.path import abspath
 from re import fullmatch
 from typing import Final, Optional, SupportsIndex, TypeGuard, overload
+from warnings import warn
 from zipfile import ZipFile, ZipInfo
 
 from ..item.group import Group
 from ..item.level import Level, LevelNotFoundError
-
 from . import Location
+from .bin import BinLevel
 
-__all__ = ["ZipGroup", "ZipLevel"]
+__all__ = ["ZipGroup", "ZipLevel", "ZipLevelNotFoundError"]
 
 
 def _id_to_fn(id: SupportsIndex, /) -> str:
+    return f"{str(index(id) + 1).zfill(2)}.bin"
+
+
+def _id_to_old_fn(id: SupportsIndex, /) -> str:
     return f"{str(index(id) + 1).zfill(2)}.lvl"
 
 
@@ -43,11 +48,12 @@ class ZipLevel(Level):
 
     def delete(self) -> None:
         with ZipFile(self.path) as a:
-            if self.fn not in a.namelist():
+            if self.fn not in a.namelist() and self.old_fn not in a.namelist():
                 raise ZipLevelNotFoundError
             contents: Final[dict[ZipInfo, bytes]] = {}
             for info in filterfalse(
-                lambda info: info.filename == self.fn, a.infolist()
+                lambda info: info.filename == self.fn or info.filename == self.old_fn,
+                a.infolist(),
             ):
                 contents[info] = a.read(info)
         with ZipFile(self.path, "w") as a:
@@ -73,22 +79,38 @@ class ZipLevel(Level):
         return self._id
 
     def __len__(self) -> int:
-        try:
-            with ZipFile(self.path) as a:
-                return a.getinfo(self.fn).file_size
-        except KeyError as e:
-            raise ZipLevelNotFoundError(*e.args)
+        with ZipFile(self.path) as a:
+            try:
+                a.getinfo(self.fn)
+            except KeyError:
+                try:
+                    return a.getinfo(self.old_fn).file_size
+                except KeyError:
+                    raise ZipLevelNotFoundError
+            else:
+                return int.from_bytes(a.read(self.fn)[8:12], byteorder="big")
+
+    @property
+    def old_fn(self) -> str:
+        return _id_to_old_fn(self.id)
 
     @property
     def path(self) -> str:
         return self._path
 
     def read(self) -> bytes:
-        try:
-            with ZipFile(self.path) as a:
-                return a.read(self.fn)
-        except KeyError as e:
-            raise ZipLevelNotFoundError(*e.args)
+        with ZipFile(self.path) as a:
+            try:
+                a.getinfo(self.fn)
+            except KeyError:
+                try:
+                    a.getinfo(self.old_fn)
+                except KeyError:
+                    raise ZipLevelNotFoundError
+                else:
+                    return a.read(self.old_fn)
+            else:
+                return BinLevel.decompress(a.read(self.fn))
 
     def __repr__(self) -> str:
         return f"{type(self).__name__}({self.path!r}, {self.id!r})"
@@ -97,17 +119,30 @@ class ZipLevel(Level):
         contents: Final[dict[ZipInfo, bytes]] = {}
         with ZipFile(self.path, "a") as a:
             for info in filterfalse(
-                lambda info: info.filename == self.fn, a.infolist()
+                lambda info: info.filename == self.fn or info.filename == self.old_fn,
+                a.infolist(),
             ):
                 contents[info] = a.read(info)
         with ZipFile(self.path, "w") as a:
             for x in contents.items():
                 a.writestr(*x)
-            a.writestr(self.fn, new_content)
+            a.writestr(self.fn, BinLevel.compress(new_content))
 
 
-class ZipGroup(Group[ZipLevel], Location):
+class ZipGroup(Location, Group[ZipLevel]):
     __slots__ = ()
+
+    def __init__(self, path: str) -> None:
+        super().__init__(path)
+        with ZipFile(self.path) as a:
+            for id in range(20):
+                if _id_to_old_fn(id) in a.namelist():
+                    warn(
+                        FutureWarning(
+                            "This ZipGroup contains levels using the deprecated LVL format. Update this file by writing to it or by using the update function."
+                        )
+                    )
+                    break
 
     def __contains__(self, value: object, /) -> TypeGuard[ZipLevel]:
         return isinstance(value, ZipLevel) and value.path == self.path
@@ -139,28 +174,40 @@ class ZipGroup(Group[ZipLevel], Location):
         else:
             raise ValueError
 
-    def init(self) -> None:
-        with ZipFile(self.path, "x") as a:
-            pass
-
     def fill_mask(self) -> Sequence[bool]:
         with ZipFile(self.path) as a:
-            return [_id_to_fn(i) in a.namelist() for i in range(20)]
+            return [
+                _id_to_fn(i) in a.namelist() or _id_to_old_fn in a.namelist()
+                for i in range(20)
+            ]
 
     def read(self) -> Iterable[Optional[bytes]]:
         with ZipFile(self.path) as a:
-            name_list: Final[list[str]] = a.namelist()
             return [
-                a.read(fn) if fn in name_list else None
-                for fn in map(_id_to_fn, range(20))
+                BinLevel.decompress(a.read(_id_to_fn(id)))
+                if _id_to_fn(id) in a.namelist()
+                else a.read(_id_to_old_fn(id))
+                if _id_to_old_fn(id) in a.namelist()
+                else None
+                for id in range(20)
             ]
+
+    def update(self) -> None:
+        self.write(self.read())
+        warn(
+            FutureWarning(
+                "This function will be removed alongside support for the LVL format, and exists soley as a convienient way of converting existing ZIP files to the new BIN format."
+            )
+        )
 
     def write(self, new_content: Iterable[Optional[bytes]], /) -> None:
         contents: Final[dict[ZipInfo, bytes]] = {}
         if self:
             with ZipFile(self.path) as a:
                 for info in filterfalse(
-                    lambda info: fullmatch(r"(0[1-9]|1\d|20)\.lvl", info.filename),
+                    lambda info: fullmatch(
+                        r"(0[1-9]|1\d|20)\.(bin|lvl)", info.filename
+                    ),
                     a.infolist(),
                 ):
                     contents[info] = a.read(info)
@@ -170,4 +217,4 @@ class ZipGroup(Group[ZipLevel], Location):
             for id, content in filterfalse(
                 lambda x: x[1] is None, enumerate(new_content)
             ):
-                a.writestr(_id_to_fn(id), content)
+                a.writestr(_id_to_fn(id), BinLevel.compress(content))

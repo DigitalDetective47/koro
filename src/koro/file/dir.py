@@ -7,12 +7,17 @@ from typing import Final, Optional, SupportsIndex, TypeGuard, overload
 from ..item.group import Group
 from ..item.level import Level, LevelNotFoundError
 from ..item.save import Page, Save
-
 from . import Location
+
+__all__ = ["DirGroup", "DirLevel", "DirLevelNotFoundError", "DirSave"]
 
 _BLOCK_SIZE: Final[int] = 2048
 _EMPTY_BLOCK: Final[bytes] = b"\x00" * _BLOCK_SIZE
 _LEVEL_ALLOCATION_SIZE: Final[int] = 156864
+
+
+class DirLevelNotFoundError(LevelNotFoundError):
+    pass
 
 
 class DirLevel(Level):
@@ -45,7 +50,7 @@ class DirLevel(Level):
                     f.write(_EMPTY_BLOCK)
                     more = f.read(1) != b"\x00"
             else:
-                raise LevelNotFoundError
+                raise DirLevelNotFoundError
 
     def __eq__(self, other: object, /) -> bool:
         return (
@@ -62,23 +67,26 @@ class DirLevel(Level):
         return int(self._path[-5]) % 5 << 2 | self._offset // _LEVEL_ALLOCATION_SIZE
 
     def __len__(self) -> int:
-        with open(self._path, "rb") as f:
-            f.seek(self._offset)
-            block: Final[bytearray] = bytearray(f.read(_BLOCK_SIZE))
-            block_offset: int = 0
-            while block[-1]:
-                f.readinto(block)
-                block_offset += _BLOCK_SIZE
-            hi: int = _BLOCK_SIZE - 1
-            lo: int = 0
-            test: int
-            while hi != lo:
-                test = (hi - lo >> 1) + lo
-                if block[test]:
-                    lo = test + 1
-                else:
-                    hi = test
-            return block_offset + hi
+        if self:
+            with open(self._path, "rb") as f:
+                f.seek(self._offset)
+                block: Final[bytearray] = bytearray(f.read(_BLOCK_SIZE))
+                block_offset: int = 0
+                while block[-1]:
+                    f.readinto(block)
+                    block_offset += _BLOCK_SIZE
+                hi: int = _BLOCK_SIZE - 1
+                lo: int = 0
+                test: int
+                while hi != lo:
+                    test = (hi - lo >> 1) + lo
+                    if block[test]:
+                        lo = test + 1
+                    else:
+                        hi = test
+                return block_offset + hi
+        else:
+            raise DirLevelNotFoundError
 
     @property
     def page(self) -> Page:
@@ -108,7 +116,7 @@ class DirLevel(Level):
                         hi = test
                 return bytes(result + block[:hi])
             else:
-                raise LevelNotFoundError
+                raise DirLevelNotFoundError
 
     def __repr__(self) -> str:
         return f"{type(self).__name__}({self.path!r}, {self.page!r}, {self.id!r})"

@@ -3,6 +3,9 @@ from collections.abc import Sized
 from dataclasses import dataclass
 from enum import Enum, unique
 from typing import Final
+from warnings import warn
+
+__all__ = ["Level", "LevelNotFoundError", "LevelStatistics", "Theme"]
 
 
 @unique
@@ -73,10 +76,15 @@ class Level(ABC, Sized):
 
     def encode(self) -> bytes:
         """Return a bytes object that when written to a file can overwrite an official level."""
+        warn(
+            FutureWarning(
+                "The use of this function is deprecated as the new BIN format is compatible with the official levels and can be substituted into the game directly."
+            )
+        )
         data: Final[bytearray] = bytearray(self.read())
         header: Final[bytes] = (
             b"\x00\x00\x00\x01\x00\x00\x00\x08"
-            + len(data).to_bytes(4, "big")
+            + len(data).to_bytes(4, byteorder="big")
             + b"\x00\x00\x00\x01"
         )
         i: int = 0

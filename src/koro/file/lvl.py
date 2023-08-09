@@ -1,10 +1,10 @@
 from os.path import getsize
+from warnings import warn
 
 from ..item.level import Level, LevelNotFoundError
-
 from . import Location
 
-__all__ = ["LvlLevel"]
+__all__ = ["LvlLevel", "LvlLevelNotFoundError"]
 
 
 class LvlLevelNotFoundError(FileNotFoundError, LevelNotFoundError):
@@ -13,6 +13,14 @@ class LvlLevelNotFoundError(FileNotFoundError, LevelNotFoundError):
 
 class LvlLevel(Location, Level):
     __slots__ = ()
+
+    def __init__(self, path: str, /) -> None:
+        super().__init__(path)
+        warn(
+            FutureWarning(
+                "The LVL format for storing level data is deprecated. Level data should be converted to the BIN format using BinLevel for better compression and compatibility."
+            )
+        )
 
     def delete(self) -> None:
         try:

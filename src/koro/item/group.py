@@ -4,6 +4,8 @@ from typing import Final, Generic, Optional, TypeVar
 
 from .level import Level, LevelNotFoundError
 
+__all__ = ["Group"]
+
 _L = TypeVar("_L", bound=Level)
 
 
