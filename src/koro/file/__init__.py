@@ -2,9 +2,7 @@ from os import remove
 from os.path import abspath, exists
 from shutil import rmtree
 
-from . import bin, dir, lvl, zip
-
-__all__ = ["bin", "dir", "Location", "lvl", "zip"]
+__all__ = ["Location"]
 
 
 class Location:
