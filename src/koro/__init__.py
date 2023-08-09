@@ -1,4 +1,5 @@
 from .file import *
+from .file.bin import *
 from .file.dir import *
 from .file.lvl import *
 from .file.zip import *
