@@ -134,15 +134,18 @@ class ZipGroup(Location, Group[ZipLevel]):
 
     def __init__(self, path: str) -> None:
         super().__init__(path)
-        with ZipFile(self.path) as a:
-            for id in range(20):
-                if _id_to_old_fn(id) in a.namelist():
-                    warn(
-                        FutureWarning(
-                            "This ZipGroup contains levels using the deprecated LVL format. Update this file by writing to it or by using the update function."
+        try:
+            with ZipFile(self.path) as a:
+                for id in range(20):
+                    if _id_to_old_fn(id) in a.namelist():
+                        warn(
+                            FutureWarning(
+                                "This ZipGroup contains levels using the deprecated LVL format. Update this file by writing to it or by using the update function."
+                            )
                         )
-                    )
-                    break
+                        break
+        except FileNotFoundError:
+            pass
 
     def __contains__(self, value: object, /) -> TypeGuard[ZipLevel]:
         return isinstance(value, ZipLevel) and value.path == self.path
