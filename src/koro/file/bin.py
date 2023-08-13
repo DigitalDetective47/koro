@@ -32,10 +32,11 @@ class BinLevel(Location, Level):
         test_reference_indicies: list[int]
         while data_index < len(data):
             chunk = bytearray(b"\x00")
-            for _ in range(8):
+            for bit in range(8):
                 if data_index >= len(data):
+                    chunk[0] >>= 8 - bit
                     output.extend(chunk)
-                    return output
+                    return output + b"\x00" * (len(output) & 1)
                 if len(data) - data_index <= 2:
                     buffer[buffer_index] = data[data_index]
                     buffer_index = buffer_index + 1 & 1023
@@ -80,8 +81,8 @@ class BinLevel(Location, Level):
                 test_length = 4
                 test_reference_indicies = reference_indices.copy()
                 while test_length <= min(66, len(data) - data_index):
-                    test_buffer[buffer_index + test_length - 1025] = data[
-                        data_index + test_length - 1
+                    test_buffer[buffer_index + test_length - 1026] = data[
+                        data_index + test_length - 2
                     ]
                     for i in test_reference_indicies.copy():
                         if (
@@ -116,7 +117,7 @@ class BinLevel(Location, Level):
                 )
                 data_index += test_length
             output.extend(chunk)
-        return output + b"\x00"
+        return output + b"\x00" * (len(output) & 1)
 
     @staticmethod
     def decompress(data: bytes, /) -> bytes:
