@@ -117,7 +117,7 @@ class BinLevel(Location, Level):
                 )
                 data_index += test_length
             output.extend(chunk)
-        return output + b"\x00" * (len(output) & 1)
+        return bytes(output + b"\x00" * (len(output) & 1))
 
     @staticmethod
     def decompress(data: bytes, /) -> bytes:
@@ -151,7 +151,7 @@ class BinLevel(Location, Level):
                         buffer_index = buffer_index + 1 & 1023
                     result.extend(handle)
                 flags >>= 1
-        return result.replace(b"<EDITUSER> 3 </EDITUSER>", b"<EDITUSER> 2 </EDITUSER>")
+        return bytes(result.replace(b"<EDITUSER> 3 </EDITUSER>", b"<EDITUSER> 2 </EDITUSER>"))
 
     def delete(self) -> None:
         try:
