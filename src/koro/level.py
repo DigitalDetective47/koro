@@ -20,9 +20,9 @@ class Theme(Enum):
     CANDY_ISLAND = 7
     HAUNTED_HOUSE = 8
     CITY = 9
+    NIGHT_CITY = 10
     TUTORIAL = 11
     HAUNTED_HOUSE_DARKNESS = 12
-    NIGHT_CITY = 13
 
     def __str__(self) -> str:
         return (
@@ -36,10 +36,9 @@ class Theme(Enum):
             "Candy Island",
             "Haunted House",
             "City",
-            None,
+            "Night City",
             "Tutorial",
             "Haunted House Darkness",
-            "Night City",
         )[self.value]
 
 

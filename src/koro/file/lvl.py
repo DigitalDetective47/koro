@@ -1,7 +1,7 @@
 from os.path import getsize
 from warnings import warn
 
-from ..item.level import Level, LevelNotFoundError
+from ..level import Level, LevelNotFoundError
 from . import Location
 
 __all__ = ["LvlLevel", "LvlLevelNotFoundError"]

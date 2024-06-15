@@ -7,8 +7,8 @@ from typing import Final, Optional, SupportsIndex, TypeGuard, overload
 from warnings import warn
 from zipfile import ZipFile, ZipInfo
 
-from ..item.group import Group
-from ..item.level import Level, LevelNotFoundError
+from ..group import Group
+from ..level import Level, LevelNotFoundError
 from . import Location
 from .bin import BinLevel
 
@@ -61,11 +61,10 @@ class ZipLevel(Level):
                 a.writestr(*x)
 
     def __eq__(self, other: object, /) -> bool:
-        return (
-            self.path == other.path and self.id == other.id
-            if isinstance(other, ZipLevel)
-            else NotImplemented
-        )
+        if isinstance(other, ZipLevel):
+            return self.path == other.path and self.id == other.id
+        else:
+            return NotImplemented
 
     def __hash__(self) -> int:
         return hash((self.path, self.id))
@@ -172,7 +171,7 @@ class ZipGroup(Location, Group[ZipLevel]):
             raise IndexError(key)
 
     def index(self, value: object, start: int = 0, stop: Optional[int] = None) -> int:
-        if value in self and value.id in range(*slice(start, stop).indices(20)):
+        if value in self and isinstance(value, ZipLevel) and value.id in range(*slice(start, stop).indices(20)):
             return value.id
         else:
             raise ValueError
@@ -220,4 +219,5 @@ class ZipGroup(Location, Group[ZipLevel]):
             for id, content in filterfalse(
                 lambda x: x[1] is None, enumerate(new_content)
             ):
+                assert content is not None
                 a.writestr(_id_to_fn(id), BinLevel.compress(content))

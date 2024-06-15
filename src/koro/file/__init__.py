@@ -25,9 +25,10 @@ class Location:
             rmtree(self.path)
 
     def __eq__(self, other: object, /) -> bool:
-        return (
-            self.path == other.path if isinstance(other, Location) else NotImplemented
-        )
+        if isinstance(other, Location):
+            return self.path == other.path
+        else:
+            return NotImplemented
 
     def __hash__(self) -> int:
         return hash(self.path)

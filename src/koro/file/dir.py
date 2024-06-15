@@ -4,9 +4,9 @@ from os import SEEK_CUR
 from os.path import abspath, dirname, isfile, join
 from typing import Final, Optional, SupportsIndex, TypeGuard, overload
 
-from ..item.group import Group
-from ..item.level import Level, LevelNotFoundError
-from ..item.save import Page, Save
+from ..group import Group
+from ..level import Level, LevelNotFoundError
+from ..save import Page, Save
 from . import Location
 
 __all__ = ["DirGroup", "DirLevel", "DirLevelNotFoundError", "DirSave"]
@@ -28,9 +28,9 @@ class DirLevel(Level):
     _path: str
 
     def __init__(self, path: str, /, page: Page, id: SupportsIndex) -> None:
-        i = index(id)
-        if 0 <= i < 20:
-            self._offset = 8 + _LEVEL_ALLOCATION_SIZE * (i & 3)
+        id = index(id)
+        if 0 <= id < 20:
+            self._offset = 8 + _LEVEL_ALLOCATION_SIZE * (id & 3)
             self._path = join(abspath(path), f"ed0{(id >> 2) + 5 * page.value}.dat")
         else:
             raise ValueError(id)
@@ -53,11 +53,10 @@ class DirLevel(Level):
                 raise DirLevelNotFoundError
 
     def __eq__(self, other: object, /) -> bool:
-        return (
-            self._offset == other._offset and self._path == other._path
-            if isinstance(other, DirLevel)
-            else NotImplemented
-        )
+        if isinstance(other, DirLevel):
+            return self._offset == other._offset and self._path == other._path
+        else:
+            return NotImplemented
 
     def __hash__(self) -> int:
         return hash((self._offset, self._path))
@@ -152,11 +151,10 @@ class DirGroup(Group[DirLevel]):
         return int(value in self)
 
     def __eq__(self, other: object, /) -> bool:
-        return (
-            self.page == other.page and self.path == other.path
-            if isinstance(other, DirGroup)
-            else NotImplemented
-        )
+        if isinstance(other, DirGroup):
+            return self.page == other.page and self.path == other.path
+        else:
+            return NotImplemented
 
     @overload
     def __getitem__(self, index: SupportsIndex, /) -> DirLevel:
@@ -182,7 +180,7 @@ class DirGroup(Group[DirLevel]):
         return hash((self.path, self.page))
 
     def index(self, value: object, start: int = 0, stop: Optional[int] = None) -> int:
-        if value in self and value.id in range(*slice(start, stop).indices(20)):
+        if value in self and isinstance(value, DirLevel) and value.id in range(*slice(start, stop).indices(20)):
             return value.id
         else:
             raise ValueError

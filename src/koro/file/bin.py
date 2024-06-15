@@ -1,7 +1,7 @@
 from itertools import chain
 from typing import Final
 
-from ..item.level import Level, LevelNotFoundError
+from ..level import Level, LevelNotFoundError
 from . import Location
 
 __all__ = ["BinLevel", "BinLevelNotFoundError"]
@@ -165,7 +165,7 @@ class BinLevel(Location, Level):
                 f.seek(8)
                 return int.from_bytes(f.read(4), byteorder="big")
         except FileNotFoundError as e:
-            BinLevelNotFoundError(*e.args)
+            raise BinLevelNotFoundError(*e.args)
 
     def read(self) -> bytes:
         try:
