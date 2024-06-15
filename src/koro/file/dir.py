@@ -180,7 +180,11 @@ class DirGroup(Group[DirLevel]):
         return hash((self.path, self.page))
 
     def index(self, value: object, start: int = 0, stop: Optional[int] = None) -> int:
-        if value in self and isinstance(value, DirLevel) and value.id in range(*slice(start, stop).indices(20)):
+        if (
+            value in self
+            and isinstance(value, DirLevel)
+            and value.id in range(*slice(start, stop).indices(20))
+        ):
             return value.id
         else:
             raise ValueError

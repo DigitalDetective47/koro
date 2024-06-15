@@ -1,9 +1,6 @@
 from abc import ABC, abstractmethod
 from collections.abc import Sized
-from dataclasses import dataclass
 from enum import Enum, unique
-from typing import Final
-from warnings import warn
 
 __all__ = ["Level", "LevelNotFoundError", "LevelStatistics", "Theme"]
 
@@ -42,27 +39,12 @@ class Theme(Enum):
         )[self.value]
 
 
-@dataclass(frozen=True, match_args=False, kw_only=True, slots=True)
-class LevelStatistics:
-    crystals: int
-    filesize: int
-    theme: Theme
-
-
 class LevelNotFoundError(LookupError):
     pass
 
 
 class Level(ABC, Sized):
     __slots__ = ()
-
-    def about(self) -> LevelStatistics:
-        content: Final[bytes] = self.read()
-        return LevelStatistics(
-            crystals=content.count(b"<anmtype> 49 </anmtype>"),
-            filesize=len(content),
-            theme=Theme(int(content[87:89])),
-        )
 
     @abstractmethod
     def __bool__(self) -> bool:
@@ -72,25 +54,6 @@ class Level(ABC, Sized):
     def delete(self) -> None:
         """Delete this level if it exists, otherwise raise LevelNotFoundError."""
         pass
-
-    def encode(self) -> bytes:
-        """Return a bytes object that when written to a file can overwrite an official level."""
-        warn(
-            FutureWarning(
-                "The use of this function is deprecated as the new BIN format is compatible with the official levels and can be substituted into the game directly."
-            )
-        )
-        data: Final[bytearray] = bytearray(self.read())
-        header: Final[bytes] = (
-            b"\x00\x00\x00\x01\x00\x00\x00\x08"
-            + len(data).to_bytes(4, byteorder="big")
-            + b"\x00\x00\x00\x01"
-        )
-        i: int = 0
-        while i < len(data):
-            data.insert(i, 255)
-            i += 9
-        return header + data + b"\x00"
 
     def __len__(self) -> int:
         """The file size of this level."""
