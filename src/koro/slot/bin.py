@@ -1,19 +1,12 @@
 from itertools import chain
 from typing import Final
 
-from ..level import Level, LevelNotFoundError
-from . import Location
-
-__all__ = ["BinLevel", "BinLevelNotFoundError"]
-
-
-class BinLevelNotFoundError(FileNotFoundError, LevelNotFoundError):
-    pass
+from ..level import Level
+from .file import FileSlot
+from .xml import XmlSlot
 
 
-class BinLevel(Location, Level):
-    __slots__ = ()
-
+class BinSlot(FileSlot):
     @staticmethod
     def compress(data: bytes, /) -> bytes:
         """Compress the given level data into the game's format."""
@@ -117,7 +110,7 @@ class BinLevel(Location, Level):
                 )
                 data_index += test_length
             output.extend(chunk)
-        return bytes(output + b"\x00" * (len(output) & 1))
+        return bytes(output)
 
     @staticmethod
     def decompress(data: bytes, /) -> bytes:
@@ -151,31 +144,12 @@ class BinLevel(Location, Level):
                         buffer_index = buffer_index + 1 & 1023
                     result.extend(handle)
                 flags >>= 1
-        return bytes(
-            result.replace(b"<EDITUSER> 3 </EDITUSER>", b"<EDITUSER> 2 </EDITUSER>")
-        )
+        return bytes(result)
 
-    def delete(self) -> None:
-        try:
-            return super().delete()
-        except FileNotFoundError as e:
-            raise BinLevelNotFoundError(*e.args)
+    @staticmethod
+    def deserialize(data: bytes) -> Level:
+        return XmlSlot.deserialize(BinSlot.decompress(data))
 
-    def __len__(self) -> int:
-        try:
-            with open(self.path, "rb") as f:
-                f.seek(8)
-                return int.from_bytes(f.read(4), byteorder="big")
-        except FileNotFoundError as e:
-            raise BinLevelNotFoundError(*e.args)
-
-    def read(self) -> bytes:
-        try:
-            with open(self.path, "rb") as f:
-                return self.decompress(f.read())
-        except FileNotFoundError as e:
-            raise BinLevelNotFoundError(*e.args)
-
-    def write(self, new_content: bytes, /) -> None:
-        with open(self.path, "wb") as f:
-            f.write(self.compress(new_content))
+    @staticmethod
+    def serialize(level: Level) -> bytes:
+        return BinSlot.compress(XmlSlot.serialize(level))
