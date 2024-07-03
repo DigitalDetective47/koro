@@ -7,9 +7,10 @@ from .xml import XmlSlot
 
 
 class BinSlot(FileSlot):
+    __slots__ = ()
+
     @staticmethod
     def compress(data: bytes, /) -> bytes:
-        """Compress the given level data into the game's format."""
         buffer: bytearray = bytearray(1024)
         buffer_index: int = 958
         chunk: bytearray
@@ -114,7 +115,6 @@ class BinSlot(FileSlot):
 
     @staticmethod
     def decompress(data: bytes, /) -> bytes:
-        """Decompress the given data into raw level data."""
         buffer: Final[bytearray] = bytearray(1024)
         buffer_index: int = 958
         handle: int | bytearray
@@ -147,9 +147,9 @@ class BinSlot(FileSlot):
         return bytes(result)
 
     @staticmethod
-    def deserialize(data: bytes) -> Level:
+    def deserialize(data: bytes, /) -> Level:
         return XmlSlot.deserialize(BinSlot.decompress(data))
 
     @staticmethod
-    def serialize(level: Level) -> bytes:
+    def serialize(level: Level, /) -> bytes:
         return BinSlot.compress(XmlSlot.serialize(level))

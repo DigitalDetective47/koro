@@ -78,6 +78,9 @@ class Level(set[BasePart]):
     def edit_user(self, value: EditUser, /) -> None:
         self._edit_user = value
 
+    def __repr__(self) -> str:
+        return f"{type(self).__name__}({set(self)!r}, edit_user={self.edit_user!r}, theme={self.theme!r}, tilt_lock={self.tilt_lock!r})"
+
     @property
     def theme(self) -> Theme:
         return self._theme

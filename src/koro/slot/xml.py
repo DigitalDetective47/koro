@@ -203,6 +203,8 @@ def sts(part: BasePart, /) -> int:
 
 
 class XmlSlot(FileSlot):
+    __slots__ = ()
+
     @staticmethod
     def serialize(level: Level, /) -> bytes:
         with StringIO(
