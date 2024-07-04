@@ -1,13 +1,15 @@
 from abc import ABC, abstractmethod
 from os import remove
 from os.path import isfile
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from ..stage import Stage
 from . import Slot
 
 if TYPE_CHECKING:
     from _typeshed import StrOrBytesPath
+else:
+    StrOrBytesPath = Any
 
 
 class FileSlot(Slot, ABC):
