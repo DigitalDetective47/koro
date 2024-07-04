@@ -277,6 +277,10 @@ class DeviceModel(Enum):
     """The blue line used by moving tiles"""
     OrangeLine = 50
     """The orange line used by switch moving tiles"""
+    CubicTextBox = 92
+    """A cubic region that opens a text box"""
+    WallTextBox = 93
+    """A tall, wide, and thin region that opens a text box"""
     QuestionMark = 94
     """An animated question mark with a glow beneath it"""
 

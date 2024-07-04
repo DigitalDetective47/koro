@@ -3,6 +3,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from collections.abc import Iterable, MutableSequence
 from enum import Enum, unique, Flag
+from operator import index
 from sys import maxsize
 from typing import Any, Final, Iterator, Literal, Self, SupportsIndex, overload
 
@@ -328,7 +329,7 @@ class MovingTile(BasePart):
         self.dest_x = dest_x
         self.dest_y = dest_y
         self.dest_z = dest_z
-        self.shape = shape
+        self._shape = shape
         self.speed = speed  # type: ignore[assignment]
         self.switch = switch
         self.walls = walls
@@ -456,7 +457,9 @@ class MovingTile(BasePart):
 
     @switch.setter
     def switch(self, value: bool, /) -> None:
-        if self.shape in frozenset({PartModel.FunnelPipe, PartModel.StraightPipe}):
+        if value and self.shape in frozenset(
+            {PartModel.FunnelPipe, PartModel.StraightPipe}
+        ):
             raise ValueError("Moving pipes cannot be switches")
         else:
             self._switch = value
@@ -467,7 +470,9 @@ class MovingTile(BasePart):
 
     @walls.setter
     def walls(self, value: Walls, /) -> None:
-        if self.shape in frozenset({PartModel.Tile20x20, PartModel.TileA30x30}):
+        if not value or self.shape in frozenset(
+            {PartModel.Tile20x20, PartModel.TileA30x30}
+        ):
             self._walls = value
         else:
             raise ValueError("Invalid shape for wall attachment")
@@ -1678,6 +1683,51 @@ class MelodyTile(BasePart):
 
     def __repr__(self) -> str:
         return f"{type(self).__name__}({self.x_pos!r}, {self.y_pos!r}, {self.z_pos!r}, {self.x_rot!r}, {self.y_rot!r}, {self.z_rot!r}, note={self.note!r})"
+
+
+class TextBox(BasePart):
+    __slots__ = ("_shape", "_text_id")
+
+    _shape: Literal[DeviceModel.CubicTextBox, DeviceModel.WallTextBox]
+    _text_id: int
+
+    def __init__(
+        self,
+        x_pos: float,
+        y_pos: float,
+        z_pos: float,
+        x_rot: float,
+        y_rot: float,
+        z_rot: float,
+        *,
+        shape: Literal[DeviceModel.CubicTextBox, DeviceModel.WallTextBox],
+        text_id: SupportsIndex,
+    ) -> None:
+        super().__init__(x_pos, y_pos, z_pos, x_rot, y_rot, z_rot)
+        self.shape = shape
+        self.text_id = text_id  # type: ignore[assignment]
+
+    @property
+    def cost(self) -> Literal[0]:
+        return 0
+
+    @property
+    def shape(self) -> Literal[DeviceModel.CubicTextBox, DeviceModel.WallTextBox]:
+        return self._shape
+
+    @shape.setter
+    def shape(
+        self, value: Literal[DeviceModel.CubicTextBox, DeviceModel.WallTextBox], /
+    ) -> None:
+        self._shape = value
+
+    @property
+    def text_id(self) -> int:
+        return self._text_id
+
+    @text_id.setter
+    def text_id(self, value: SupportsIndex, /) -> None:
+        self._text_id = index(value)
 
 
 class KororinCapsule(BasePart):

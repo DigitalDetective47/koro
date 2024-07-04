@@ -12,6 +12,8 @@ from .xml import XmlSlot
 
 if TYPE_CHECKING:
     from _typeshed import StrOrBytesPath
+else:
+    StrOrBytesPath = Any
 
 
 __all__ = ["EditorPage", "get_slots", "SaveSlot"]
