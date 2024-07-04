@@ -5,7 +5,7 @@ from os.path import basename, dirname, join
 from typing import TYPE_CHECKING, Annotated, Any, Literal, SupportsIndex
 from collections.abc import Mapping, Sequence
 
-from koro.level import Level
+from ..stage import Stage
 
 from . import Slot
 from .xml import XmlSlot
@@ -72,7 +72,7 @@ class SaveSlot(Slot):
     ) -> Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]:
         return (int(basename(self._path)[2:4]) % 5 >> 2 | self._offset // 156864) + 1  # type: ignore[return-value]
 
-    def load(self) -> Level | None:
+    def load(self) -> Stage | None:
         try:
             with open(self._path, "rb") as f:
                 f.seek(self._offset)
@@ -111,7 +111,7 @@ class SaveSlot(Slot):
     def __repr__(self) -> str:
         return f"{type(self).__name__}({self.path!r}, {self.page!r}, {self.index!r})"
 
-    def save(self, data: Level | None) -> None:
+    def save(self, data: Stage | None) -> None:
         binary: bytes = b"" if data is None else XmlSlot.serialize(data)
         if len(binary) > 156864:
             raise ValueError("serialized level data is too large to save")

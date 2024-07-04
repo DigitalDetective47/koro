@@ -3,7 +3,7 @@ from os import remove
 from os.path import isfile
 from typing import TYPE_CHECKING
 
-from ..level import Level
+from ..stage import Stage
 from . import Slot
 
 if TYPE_CHECKING:
@@ -24,7 +24,7 @@ class FileSlot(Slot, ABC):
 
     @staticmethod
     @abstractmethod
-    def deserialize(data: bytes, /) -> Level:
+    def deserialize(data: bytes, /) -> Stage:
         pass
 
     def __eq__(self, other: object, /) -> bool:
@@ -38,7 +38,7 @@ class FileSlot(Slot, ABC):
     def __hash__(self) -> int:
         return hash(self.path)
 
-    def load(self) -> Level | None:
+    def load(self) -> Stage | None:
         try:
             with open(self.path, "rb") as f:
                 return self.deserialize(f.read())
@@ -52,7 +52,7 @@ class FileSlot(Slot, ABC):
     def __repr__(self) -> str:
         return f"{type(self).__name__}({self.path!r})"
 
-    def save(self, data: Level | None) -> None:
+    def save(self, data: Stage | None) -> None:
         if data is None:
             remove(self.path)
         else:
@@ -61,5 +61,5 @@ class FileSlot(Slot, ABC):
 
     @staticmethod
     @abstractmethod
-    def serialize(level: Level, /) -> bytes:
+    def serialize(stage: Stage, /) -> bytes:
         pass

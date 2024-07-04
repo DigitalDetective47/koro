@@ -1,7 +1,7 @@
 from itertools import chain
 from typing import Final
 
-from ..level import Level
+from ..stage import Stage
 from .file import FileSlot
 from .xml import XmlSlot
 
@@ -147,9 +147,9 @@ class BinSlot(FileSlot):
         return bytes(result)
 
     @staticmethod
-    def deserialize(data: bytes, /) -> Level:
+    def deserialize(data: bytes, /) -> Stage:
         return XmlSlot.deserialize(BinSlot.decompress(data))
 
     @staticmethod
-    def serialize(level: Level, /) -> bytes:
+    def serialize(level: Stage, /) -> bytes:
         return BinSlot.compress(XmlSlot.serialize(level))

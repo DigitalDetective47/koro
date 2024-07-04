@@ -3,7 +3,7 @@ from enum import Enum, unique
 
 from .part import BasePart
 
-__all__ = ["EditUser", "Level", "Theme"]
+__all__ = ["EditUser", "Stage", "Theme"]
 
 
 @unique
@@ -49,7 +49,7 @@ class Theme(Enum):
         }[self]
 
 
-class Level(set[BasePart]):
+class Stage(set[BasePart]):
     __slots__ = ("_edit_user", "_theme", "_tilt_lock")
 
     _edit_user: EditUser

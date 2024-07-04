@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from collections.abc import Iterable, MutableSequence
-from enum import Enum, unique
+from enum import Enum, unique, Flag
 from sys import maxsize
 from typing import Any, Final, Iterator, Literal, Self, SupportsIndex, overload
 
@@ -47,6 +47,7 @@ __all__ = [
     "Turntable",
     "UpsideDownBall",
     "UpsideDownStageDevice",
+    "Walls",
     "Warp",
 ]
 
@@ -252,14 +253,23 @@ class ProgressMarker(BasePart):
         return f"{type(self).__name__}({self.x_pos!r}, {self.y_pos!r}, {self.z_pos!r}, {self.x_rot!r}, {self.y_rot!r}, {self.z_rot!r}, progress={self.progress!r})"
 
 
-class MovingTile(BasePart):
-    """A part that moves in a straight line.
-    This does not use the SimpleSpeed class used by other moving parts as the way that moving tiles handle their movement speed is fundamentally different to other moving objects.
-    """
+@unique
+class Speed(Enum):
+    SLOW = 55
+    NORMAL = 39
+    FAST = 23
 
-    SLOW: Final[float] = 0.5
-    NORMAL: Final[float] = 1.0
-    FAST: Final[float] = 1.5
+
+@unique
+class Walls(Flag):
+    BACK = 8
+    FRONT = 2
+    LEFT = 4
+    RIGHT = 1
+
+
+class MovingTile(BasePart):
+    """A part that moves in a straight line."""
 
     __slots__ = (
         "_dest_x",
@@ -268,10 +278,7 @@ class MovingTile(BasePart):
         "_shape",
         "_speed",
         "_switch",
-        "_wall_back",
-        "_wall_front",
-        "_wall_left",
-        "_wall_right",
+        "_walls",
     )
 
     _dest_x: float
@@ -289,10 +296,7 @@ class MovingTile(BasePart):
     ]
     _speed: float
     _switch: bool
-    _wall_back: bool
-    _wall_front: bool
-    _wall_left: bool
-    _wall_right: bool
+    _walls: Walls
 
     def __init__(
         self,
@@ -316,24 +320,18 @@ class MovingTile(BasePart):
             PartModel.FunnelPipe,
             PartModel.StraightPipe,
         ],
-        speed: float = NORMAL,
+        speed: Speed | float = Speed.NORMAL,
         switch: bool = False,
-        wall_back: bool = False,
-        wall_front: bool = False,
-        wall_left: bool = False,
-        wall_right: bool = False,
+        walls: Walls = Walls(0),
     ) -> None:
         super().__init__(x_pos, y_pos, z_pos, x_rot, y_rot, z_rot)
         self.dest_x = dest_x
         self.dest_y = dest_y
         self.dest_z = dest_z
         self.shape = shape
-        self.speed = speed
+        self.speed = speed  # type: ignore[assignment]
         self.switch = switch
-        self.wall_back = wall_back
-        self.wall_front = wall_front
-        self.wall_left = wall_left
-        self.wall_right = wall_right
+        self.walls = walls
 
     @property
     def cost(self) -> Literal[20, 70, 35, 40, 50, 65]:
@@ -382,18 +380,12 @@ class MovingTile(BasePart):
         output: Final[list[str]] = [
             f"{type(self).__name__}({self.x_pos!r}, {self.y_pos!r}, {self.z_pos!r}, {self.x_rot!r}, {self.y_rot!r}, {self.z_rot!r}, dest_x={self.dest_x!r}, dest_y={self.dest_y!r}, dest_z={self.dest_z!r}, shape={self.shape!r}"
         ]
-        if self.speed != MovingTile.NORMAL:
+        if self.speed != 1.0:
             output.append(f", speed={self.speed!r}")
         if self.switch:
             output.append(f", switch={self.switch!r}")
-        if self.wall_back:
-            output.append(f", wall_back={self.wall_back!r}")
-        if self.wall_front:
-            output.append(f", wall_front={self.wall_front!r}")
-        if self.wall_left:
-            output.append(f", wall_left={self.wall_left!r}")
-        if self.wall_right:
-            output.append(f", wall_right={self.wall_right!r}")
+        if self.walls:
+            output.append(f", walls={self.walls!r}")
         output.append(")")
         return "".join(output)
 
@@ -433,8 +425,9 @@ class MovingTile(BasePart):
             and self.switch
         ):
             raise ValueError("Moving pipes cannot be switches")
-        elif value not in frozenset({PartModel.Tile20x20, PartModel.TileA30x30}) and (
-            self.wall_back or self.wall_front or self.wall_left or self.wall_right
+        elif (
+            value not in frozenset({PartModel.Tile20x20, PartModel.TileA30x30})
+            and self.walls
         ):
             raise ValueError("Invalid shape for wall attachment")
         else:
@@ -442,12 +435,19 @@ class MovingTile(BasePart):
 
     @property
     def speed(self) -> float:
-        """This behaves differently than the speed value for other moving objects"""
         return self._speed
 
     @speed.setter
-    def speed(self, value: float, /) -> None:
-        self._speed = value
+    def speed(self, value: Speed | float, /) -> None:
+        match value:
+            case Speed.SLOW:
+                self.speed = 0.5
+            case Speed.NORMAL:
+                self.speed = 1.0
+            case Speed.FAST:
+                self.speed = 1.5
+            case _:
+                self._speed = value
 
     @property
     def switch(self) -> bool:
@@ -462,57 +462,15 @@ class MovingTile(BasePart):
             self._switch = value
 
     @property
-    def wall_back(self) -> bool:
-        return self._wall_back
+    def walls(self) -> Walls:
+        return self._walls
 
-    @wall_back.setter
-    def wall_back(self, value: bool, /) -> None:
+    @walls.setter
+    def walls(self, value: Walls, /) -> None:
         if self.shape in frozenset({PartModel.Tile20x20, PartModel.TileA30x30}):
-            self._wall_back = value
+            self._walls = value
         else:
             raise ValueError("Invalid shape for wall attachment")
-
-    @property
-    def wall_front(self) -> bool:
-        return self._wall_front
-
-    @wall_front.setter
-    def wall_front(self, value: bool, /) -> None:
-        if self.shape in frozenset({PartModel.Tile20x20, PartModel.TileA30x30}):
-            self._wall_front = value
-        else:
-            raise ValueError("Invalid shape for wall attachment")
-
-    @property
-    def wall_left(self) -> bool:
-        return self._wall_left
-
-    @wall_left.setter
-    def wall_left(self, value: bool, /) -> None:
-        if self.shape in frozenset({PartModel.Tile20x20, PartModel.TileA30x30}):
-            self._wall_left = value
-        else:
-            raise ValueError("Invalid shape for wall attachment")
-
-    @property
-    def wall_right(self) -> bool:
-        return self._wall_right
-
-    @wall_right.setter
-    def wall_right(self, value: bool, /) -> None:
-        if self.shape in frozenset({PartModel.Tile20x20, PartModel.TileA30x30}):
-            self._wall_right = value
-        else:
-            raise ValueError("Invalid shape for wall attachment")
-
-
-@unique
-class Speed(Enum):
-    """Speeds used for devices with fixed speed values"""
-
-    SLOW = 55
-    NORMAL = 39
-    FAST = 23
 
 
 class FixedSpeedDevice(BasePart, ABC):
@@ -1649,6 +1607,10 @@ class MelodyTile(BasePart):
     ) -> None:
         super().__init__(x_pos, y_pos, z_pos, x_rot, y_rot, z_rot)
         self.note = note
+
+    @property
+    def cost(self) -> Literal[20]:
+        return 20
 
     @property
     def note(self) -> Literal[
