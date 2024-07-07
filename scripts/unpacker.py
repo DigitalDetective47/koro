@@ -10,7 +10,13 @@ parser: Final[ArgumentParser] = ArgumentParser(
 )
 parser.add_argument("source", help="the stages to add")
 parser.add_argument("dest", help="the save file to inject")
-parser.add_argument("slot", nargs="?", default=1, type=int, help="the slot number to place the stage in\n(only applies if injecting a single stage)")
+parser.add_argument(
+    "slot",
+    nargs="?",
+    default=1,
+    type=int,
+    help="the slot number to place the stage in\n(only applies if injecting a single stage)",
+)
 args: Final[Namespace] = parser.parse_args()
 
 s: Sequence[SaveSlot] = get_slots(args.dest)[EditorPage.FRIEND]
