@@ -16,7 +16,7 @@ This package allows you to extract the saved stages from your save file and stor
 
 To install this package, simply run
 ```
-pip install koro
+pip install koro==2.0.0rc3
 ```
 in a command prompt. For detailed documentation of the contents of the package, please view the wiki. For basic users, simple command&hyphen;line tools are available in the `scripts` folder of this repository. **Use of these tools requires installing the package from PyPI.**
 
