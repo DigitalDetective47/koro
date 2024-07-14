@@ -12,7 +12,7 @@ class EditUser(Enum):
     INTERMEDIATE = 1
     EXPERT = 2
     PROTECTED = 3
-    """A level with this edit user can only be opened in expert, and will open a blank level when doing so."""
+    """A stage with this edit user can only be opened in expert, and will open a blank stage when doing so."""
 
 
 @unique
@@ -31,6 +31,7 @@ class Theme(Enum):
     HAUNTED_HOUSE = 8
     CITY = 9
 
+    @property
     def decorations_available(self) -> int:
         return {
             Theme.HAUNTED_HOUSE_DARKNESS: 8,
@@ -62,7 +63,7 @@ class Stage(set[BasePart]):
         /,
         *,
         edit_user: EditUser = EditUser.EXPERT,
-        theme: Theme,
+        theme: Theme = Theme.THE_EMPTY_LOT,
         tilt_lock: bool = False,
     ) -> None:
         super().__init__(iterable)

@@ -54,7 +54,7 @@ __all__ = [
 
 
 class BasePart(ABC):
-    """Base class for all level elements"""
+    """Base class for all stage elements"""
 
     __match_args__ = ("x_pos", "y_pos", "z_pos", "x_rot", "y_rot", "z_rot")
     __slots__ = ("_x_pos", "_x_rot", "_y_pos", "_y_rot", "_z_pos", "_z_rot")

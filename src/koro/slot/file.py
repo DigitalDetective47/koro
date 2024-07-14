@@ -12,6 +12,9 @@ else:
     StrOrBytesPath = Any
 
 
+__all__ = ["FileSlot"]
+
+
 class FileSlot(Slot, ABC):
     __match_args__ = ("path",)
     __slots__ = ("_path",)

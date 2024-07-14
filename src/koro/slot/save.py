@@ -116,7 +116,7 @@ class SaveSlot(Slot):
     def save(self, data: Stage | None) -> None:
         binary: bytes = b"" if data is None else XmlSlot.serialize(data)
         if len(binary) > 156864:
-            raise ValueError("serialized level data is too large to save")
+            raise ValueError("serialized stage data is too large to save")
         try:
             with open(self._path, "xb") as f:
                 f.write(bytes(638976))

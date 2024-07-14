@@ -6,6 +6,9 @@ from .file import FileSlot
 from .xml import XmlSlot
 
 
+__all__ = ["BinSlot"]
+
+
 class BinSlot(FileSlot):
     __slots__ = ()
 
@@ -151,5 +154,5 @@ class BinSlot(FileSlot):
         return XmlSlot.deserialize(BinSlot.decompress(data))
 
     @staticmethod
-    def serialize(level: Stage, /) -> bytes:
-        return BinSlot.compress(XmlSlot.serialize(level))
+    def serialize(stage: Stage, /) -> bytes:
+        return BinSlot.compress(XmlSlot.serialize(stage))
