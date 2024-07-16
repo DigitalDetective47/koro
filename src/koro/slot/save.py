@@ -82,7 +82,8 @@ class SaveSlot(Slot):
                     block: bytearray = bytearray()
                     while True:
                         block.clear()
-                        f.readinto1(block)
+                        block.extend(f.read1())
+                        print(block)
                         if len(b.getbuffer()) + len(block) > 156864:
                             del block[156864 - len(b.getbuffer()) :]
                         if block[-1]:
