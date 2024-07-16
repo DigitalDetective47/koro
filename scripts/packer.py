@@ -22,6 +22,6 @@ args: Final[Namespace] = parser.parse_args()
 
 s: Sequence[SaveSlot] = get_slots(args.source)[EditorPage.ORIGINAL]
 with ZipFile(args.dest, "w") as z:
-    for i in args.slots:
+    for x, i in enumerate(args.slots):
         if s[i - 1]:
-            z.writestr(f"{i:02}.bin", BinSlot.serialize(s[i - 1].load()))
+            z.writestr(f"{x:02}.bin", BinSlot.serialize(s[i - 1].load()))
