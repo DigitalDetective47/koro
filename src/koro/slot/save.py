@@ -30,7 +30,7 @@ class SaveSlot(Slot):
     __match_args__ = ("path", "page", "index")
     __slots__ = ("_offset", "_path")
 
-    _offset: Literal[8, 156392, 312776, 469160]
+    _offset: Literal[8, 156872, 313736, 470600]
     _path: str | bytes
 
     def __init__(
