@@ -83,7 +83,7 @@ class SaveSlot(Slot):
                     while True:
                         block.clear()
                         block.extend(f.read1(156864 - len(b.getbuffer())))
-                        if block[-1]:
+                        if block and block[-1]:
                             b.write(block)
                         else:
                             while block:
