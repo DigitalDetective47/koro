@@ -2,7 +2,7 @@ from enum import Enum, unique
 from io import BytesIO
 from operator import index as ix
 from os.path import basename, dirname, join
-from typing import TYPE_CHECKING, Annotated, Any, Literal, SupportsIndex
+from typing import TYPE_CHECKING, Annotated, Any, Final, Literal, SupportsIndex
 from collections.abc import Mapping, Sequence
 
 from ..stage import Stage
@@ -17,6 +17,8 @@ else:
 
 
 __all__ = ["EditorPage", "get_slots", "SaveSlot"]
+
+_SIZE_LIMIT: Final[int] = 156864
 
 
 @unique
@@ -46,7 +48,7 @@ class SaveSlot(Slot):
     ) -> None:
         index = ix(index) - 1
         if index in range(20):
-            self._offset = 8 + 156864 * (index & 3)  # type: ignore[assignment]
+            self._offset = 8 + _SIZE_LIMIT * (index & 3)  # type: ignore[assignment]
             self._path = join(path, f"ed{(index >> 2) + 5 * page.value:02}.dat")  # type: ignore[arg-type]
         else:
             raise ValueError("index must be between 1 and 20")
@@ -72,7 +74,7 @@ class SaveSlot(Slot):
     def index(
         self,
     ) -> Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]:
-        return (int(basename(self._path)[2:4]) % 5 >> 2 | self._offset // 156864) + 1  # type: ignore[return-value]
+        return (int(basename(self._path)[2:4]) % 5 >> 2 | self._offset // _SIZE_LIMIT) + 1  # type: ignore[return-value]
 
     def load(self) -> Stage | None:
         try:
@@ -82,7 +84,7 @@ class SaveSlot(Slot):
                     block: bytearray = bytearray()
                     while True:
                         block.clear()
-                        block.extend(f.read1(156864 - len(b.getbuffer())))
+                        block.extend(f.read1(_SIZE_LIMIT - len(b.getbuffer())))
                         if block and block[-1]:
                             b.write(block)
                         else:
@@ -113,11 +115,13 @@ class SaveSlot(Slot):
 
     def save(self, data: Stage | None) -> None:
         binary: bytes = b"" if data is None else XmlSlot.serialize(data)
-        if len(binary) > 156864:
+        if len(binary) > _SIZE_LIMIT:
             raise ValueError("serialized stage data is too large to save")
         try:
             with open(self._path, "xb") as f:
-                f.write(bytes(638976))
+                f.write(
+                    bytes(638976)
+                )  # Weird. Would expect this to be 627464 (8 + 4 * (_SIZE_LIMIT))
             if data is None:
                 return
         except FileExistsError:
@@ -125,7 +129,7 @@ class SaveSlot(Slot):
         with open(self._path, "r+b") as f:
             f.seek(self._offset)
             f.write(binary)
-            f.write(bytes(156864 - len(binary)))
+            f.write(bytes(_SIZE_LIMIT - len(binary)))
 
 
 def get_slots(save: StrOrBytesPath, /) -> Mapping[EditorPage, Sequence[SaveSlot]]:
