@@ -45,7 +45,7 @@ class SaveSlot(Slot):
         ],
     ) -> None:
         index = ix(index) - 1
-        if index in range(0, 20):
+        if index in range(20):
             self._offset = 8 + 156864 * (index & 3)  # type: ignore[assignment]
             self._path = join(path, f"ed{(index >> 2) + 5 * page.value:02}.dat")  # type: ignore[arg-type]
         else:
