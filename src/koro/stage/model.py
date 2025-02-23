@@ -1,7 +1,6 @@
 from enum import Enum, unique
 from typing import TypeAlias
 
-
 __all__ = ["DecorationModel", "DeviceModel", "Model", "PartModel"]
 
 

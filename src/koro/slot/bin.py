@@ -5,7 +5,6 @@ from ..stage import Stage
 from .file import FileSlot
 from .xml import XmlSlot
 
-
 __all__ = ["BinSlot"]
 
 

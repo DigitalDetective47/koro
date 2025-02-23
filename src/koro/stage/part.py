@@ -2,13 +2,12 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from collections.abc import Iterable, MutableSequence
-from enum import Enum, unique, Flag
+from enum import Enum, Flag, unique
 from operator import index
 from sys import maxsize
 from typing import Any, Final, Iterator, Literal, Self, SupportsIndex, overload
 
 from .model import DecorationModel, DeviceModel, PartModel
-
 
 __all__ = [
     "Ant",

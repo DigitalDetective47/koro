@@ -1,12 +1,11 @@
+from collections.abc import Mapping, Sequence
 from enum import Enum, unique
 from io import BytesIO
 from operator import index as ix
 from os.path import basename, dirname, join
 from typing import TYPE_CHECKING, Annotated, Any, Final, Literal, SupportsIndex
-from collections.abc import Mapping, Sequence
 
 from ..stage import Stage
-
 from . import Slot
 from .xml import XmlSlot
 
