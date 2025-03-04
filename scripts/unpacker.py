@@ -1,9 +1,8 @@
 from argparse import ArgumentParser, Namespace
-from collections.abc import Sequence
 from typing import Final
 from zipfile import ZipFile
 
-from koro import BinSlot, EditorPage, SaveSlot, get_slots
+from koro import BinSlot, EditorPage, SaveSlot
 
 parser: Final[ArgumentParser] = ArgumentParser(
     description="Injects Marble Saga: Kororinpa stages into a save file."
@@ -19,13 +18,15 @@ parser.add_argument(
 )
 args: Final[Namespace] = parser.parse_args()
 
-s: Sequence[SaveSlot] = get_slots(args.dest)[EditorPage.FRIEND]
 if args.source.endswith(".zip"):
     with ZipFile(args.source) as z:
-        for i in range(20):
+        for slot in range(1, 21):
+            save_location: SaveSlot = SaveSlot(args.dest, EditorPage.FRIEND, slot)
             try:
-                s[i].save(BinSlot.deserialize(z.read(f"{i + 1:02}.bin")))
+                save_location.save(BinSlot.deserialize(z.read(f"{slot:02}.bin")))
             except KeyError:
-                s[i].save(None)
+                save_location.save(None)
 else:
-    s[args.slot - 1].save(BinSlot(args.source).load())
+    SaveSlot(args.dest, EditorPage.FRIEND, args.slot - 1).save(
+        BinSlot(args.source).load()
+    )

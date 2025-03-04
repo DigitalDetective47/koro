@@ -1,9 +1,8 @@
 from argparse import ArgumentParser, Namespace
-from collections.abc import Sequence
 from typing import Final
 from zipfile import ZipFile
 
-from koro import BinSlot, EditorPage, SaveSlot, get_slots
+from koro import BinSlot, EditorPage, SaveSlot, Stage
 
 parser: Final[ArgumentParser] = ArgumentParser(
     description="Export saved levels from a Marble Saga: Kororinpa save file and packs them into a ZIP archive."
@@ -20,8 +19,10 @@ parser.add_argument(
 )
 args: Final[Namespace] = parser.parse_args()
 
-s: Sequence[SaveSlot] = get_slots(args.source)[EditorPage.ORIGINAL]
 with ZipFile(args.dest, "w") as z:
-    for x, i in enumerate(args.slots, 1):
-        if s[i - 1]:
-            z.writestr(f"{x:02}.bin", BinSlot.serialize(s[i - 1].load()))
+    for dest_slot, src_slot in enumerate(args.slots, 1):
+        stage_data: Stage | None = SaveSlot(
+            args.source, EditorPage.FRIEND, src_slot
+        ).load()
+        if stage_data is not None:
+            z.writestr(f"{dest_slot:02}.bin", BinSlot.serialize(stage_data))
