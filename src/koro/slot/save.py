@@ -143,6 +143,7 @@ class SaveSlot(Slot):
 
 
 def get_slots(save: StrOrBytesPath, /) -> Mapping[EditorPage, Sequence[SaveSlot]]:
+    warn("function get_slots is deprecated", DeprecationWarning)
     return {
         page: tuple(SaveSlot(save, page, i) for i in range(1, 21))
         for page in EditorPage
