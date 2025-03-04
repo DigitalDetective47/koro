@@ -15,7 +15,7 @@ else:
     StrOrBytesPath = Any
 
 
-__all__ = ["EditorPage", "get_slots", "SaveSlot"]
+__all__ = ["EditorPage", "SaveSlot"]
 
 _SIZE_LIMIT: Final[int] = 156864
 
