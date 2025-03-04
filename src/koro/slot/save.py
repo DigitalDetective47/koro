@@ -12,6 +12,7 @@ from typing import (
     SupportsIndex,
     TypeAlias,
 )
+from warnings import warn
 
 from ..stage import Stage
 from . import Slot
@@ -54,6 +55,11 @@ class SaveSlot(Slot):
     ) -> None:
         index = ix(index) - 1
         if index in range(20):
+            if page == EditorPage.HUDSON and index in range(5):
+                warn(
+                    "Modifications to Hudson 01-05 are ignored by the game. These stages are read from disc (/data/A19S00X.bin) and are empty by default when inspected with this library; writes made by this library will have no effect in-game.",
+                    RuntimeWarning,
+                )
             self._offset = 8 + _SIZE_LIMIT * (index & 3)  # type: ignore[assignment]
             self._path = join(path, f"ed{(index >> 2) + 5 * page.value:02}.dat")  # type: ignore[arg-type]
         else:
