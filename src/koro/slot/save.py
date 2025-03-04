@@ -3,7 +3,15 @@ from enum import Enum, unique
 from io import BytesIO
 from operator import index as ix
 from os.path import basename, dirname, join
-from typing import TYPE_CHECKING, Annotated, Any, Final, Literal, SupportsIndex
+from typing import (
+    TYPE_CHECKING,
+    Annotated,
+    Any,
+    Final,
+    Literal,
+    SupportsIndex,
+    TypeAlias,
+)
 
 from ..stage import Stage
 from . import Slot
@@ -18,6 +26,10 @@ else:
 __all__ = ["EditorPage", "SaveSlot"]
 
 _SIZE_LIMIT: Final[int] = 156864
+
+SlotNumber: TypeAlias = Literal[
+    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20
+]
 
 
 @unique
@@ -38,12 +50,7 @@ class SaveSlot(Slot):
         self,
         path: StrOrBytesPath,
         page: EditorPage,
-        index: Annotated[
-            SupportsIndex,
-            Literal[
-                1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20
-            ],
-        ],
+        index: Annotated[SupportsIndex, SlotNumber],
     ) -> None:
         index = ix(index) - 1
         if index in range(20):
@@ -70,9 +77,7 @@ class SaveSlot(Slot):
         return hash((self._offset, self._path))
 
     @property
-    def index(
-        self,
-    ) -> Literal[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]:
+    def index(self) -> SlotNumber:
         return (int(basename(self._path)[2:4]) % 5 >> 2 | self._offset // _SIZE_LIMIT) + 1  # type: ignore[return-value]
 
     def load(self) -> Stage | None:
