@@ -32,7 +32,8 @@ class BinSlot(FileSlot):
                 if data_index >= len(data):
                     chunk[0] >>= 8 - bit
                     output.extend(chunk)
-                    return output + b"\x00" * (len(output) & 1)
+                    output.extend(bytes(len(output) & 1))
+                    return bytes(output)
                 if len(data) - data_index <= 2:
                     buffer[buffer_index] = data[data_index]
                     buffer_index = buffer_index + 1 & 1023
