@@ -3,7 +3,7 @@ from io import StringIO
 from itertools import chain
 from os import SEEK_END
 from typing import Final
-from xml.etree.ElementTree import Element, fromstring
+from xml.etree.ElementTree import Element, ElementTree, fromstring
 
 from ..stage import EditUser, Stage, Theme
 from ..stage.model import DecorationModel, DeviceModel, PartModel
@@ -60,8 +60,27 @@ class XmlSlot(FileSlot):
     __slots__ = ()
 
     @staticmethod
-    def deserialize(data: bytes) -> Stage:
+    def deserialize(data: bytes | str | ElementTree | Element) -> Stage:
         """Behavior is undefined when passed invalid stage data"""
+        if isinstance(data, (bytes, bytearray, memoryview)):
+            data = (
+                bytes(data)
+                .decode("shift_jis", "xmlcharrefreplace")
+                .replace(
+                    '<?xml version="1.0" encoding="SHIFT_JIS"?>',
+                    '<?xml version="1.0"?>',
+                    1,
+                )
+            )
+        if isinstance(data, str):
+            data = fromstring(
+                data.replace(
+                    '<?xml version="1.0"?>', '<?xml version="1.0"?>\n<body>', 1
+                )
+                + "</body>"
+            )
+        if isinstance(data, ElementTree):
+            data = data.getroot()
 
         def get_values(element: Element, /, tag: str) -> Sequence[str]:
             return element.find(tag).text.strip().split()  # type: ignore[union-attr]
@@ -72,13 +91,7 @@ class XmlSlot(FileSlot):
                 map(float, get_values(element, "rot")),
             )
 
-        root: Final[Element] = fromstring(
-            data.decode("shift_jis", "xmlcharrefreplace").replace(
-                '<?xml version="1.0" encoding="SHIFT_JIS"?>',
-                '<?xml version="1.0"?>\n<body>',
-            )
-            + "</body>"
-        )
+        root: Final[Element] = data
         editinfo: Final[Element] = root.find("EDITINFO")  # type: ignore[assignment]
         output: Final[Stage] = Stage(
             (),
