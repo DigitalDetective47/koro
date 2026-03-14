@@ -22,7 +22,7 @@ args: Final[Namespace] = parser.parse_args()
 with ZipFile(args.dest, "w") as z:
     for dest_slot, src_slot in enumerate(args.slots, 1):
         stage_data: Stage | None = SaveSlot(
-            args.source, EditorPage.FRIEND, src_slot
+            args.source, EditorPage.ORIGINAL, src_slot
         ).load()
         if stage_data is not None:
             z.writestr(f"{dest_slot:02}.bin", BinSlot.serialize(stage_data))
