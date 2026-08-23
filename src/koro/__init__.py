@@ -38,6 +38,7 @@ class StageID:
         WII_BALANCE_BOARD = 15
         RANKING_STAGE = 16
         HUDSON = 19
+        SURVIVAL = object()
 
         @property
         def num_stages(self) -> int:
@@ -59,6 +60,7 @@ class StageID:
                 type(self).WII_BALANCE_BOARD: 100,
                 type(self).RANKING_STAGE: 10,
                 type(self).HUDSON: 20,
+                type(self).SURVIVAL: 8,
             }[self]
 
     __slots__ = ("_difficulty", "_number", "_region")
@@ -83,6 +85,7 @@ class StageID:
             self.Region.OCEAN_TREASURE,
             self.Region.SPACE_STATION,
             self.Region.STUMP_TEMPLE,
+            self.Region.SURVIVAL,
         }
         if difficulty_expected and difficulty is None:
             raise ValueError(f"{region} requires a difficulty")
@@ -127,29 +130,43 @@ class StageID:
         return f"{type(self).__name__}({self.region!r}, {self.number!r}, {self.difficulty!r})"
 
     def __str__(self) -> str:
-        region_name: Final[str] = {
-            self.Region.THE_EMPTY_LOT: "The Empty Lot",
-            self.Region.NEIGHBORS_HOUSE: "Neighbor's House",
-            self.Region.SIZZLIN_DESERT: "Sizzlin' Desert",
-            self.Region.CHILL_MOUNTAIN: "Chill Mountain",
-            self.Region.OCEAN_TREASURE: "Ocean Treasure",
-            self.Region.SPACE_STATION: "Space Station",
-            self.Region.STUMP_TEMPLE: "Stump Temple",
-            self.Region.CANDY_ISLAND: "Candy Island",
-            self.Region.CANDY_ISLAND_2: "Candy Island 2",
-            self.Region.HAUNTED_HOUSE: "Haunted House",
-            self.Region.HAUNTED_HOUSE_DARKNESS: "Haunted House Darkness",
-            self.Region.CITY: "City",
-            self.Region.NIGHT_CITY: "Night City",
-            self.Region.TUTORIAL: "Tutorial",
-            self.Region.WII_BALANCE_BOARD: "Wii Balance Board",
-            self.Region.RANKING_STAGE: "Ranking Stage",
-            self.Region.HUDSON: "Hudson",
-        }[self.region]
         difficulty_string: Final[str] = {
             self.Difficulty.EASY: " (Easy)",
             self.Difficulty.NORMAL: " (Normal)",
             self.Difficulty.HARD: " (Hard)",
             None: "",
         }[self.difficulty]
-        return f"{region_name} {self.number:02}{difficulty_string}"
+        region_name: str
+        if self.region is self.Region.SURVIVAL:
+            region_name = (
+                "The Empty Lot",
+                "Neighbor's House",
+                "Sizzlin' Desert",
+                "Chill Mountain",
+                "Ocean Treasure",
+                "Space Station",
+                "Stump Temple",
+                "All",
+            )[self.number]
+            return f"Survival: {region_name}{difficulty_string}"
+        else:
+            region_name = {
+                self.Region.THE_EMPTY_LOT: "The Empty Lot",
+                self.Region.NEIGHBORS_HOUSE: "Neighbor's House",
+                self.Region.SIZZLIN_DESERT: "Sizzlin' Desert",
+                self.Region.CHILL_MOUNTAIN: "Chill Mountain",
+                self.Region.OCEAN_TREASURE: "Ocean Treasure",
+                self.Region.SPACE_STATION: "Space Station",
+                self.Region.STUMP_TEMPLE: "Stump Temple",
+                self.Region.CANDY_ISLAND: "Candy Island",
+                self.Region.CANDY_ISLAND_2: "Candy Island 2",
+                self.Region.HAUNTED_HOUSE: "Haunted House",
+                self.Region.HAUNTED_HOUSE_DARKNESS: "Haunted House Darkness",
+                self.Region.CITY: "City",
+                self.Region.NIGHT_CITY: "Night City",
+                self.Region.TUTORIAL: "Tutorial",
+                self.Region.WII_BALANCE_BOARD: "Wii Balance Board",
+                self.Region.RANKING_STAGE: "Ranking Stage",
+                self.Region.HUDSON: "Hudson",
+            }[self.region]
+            return f"{region_name} {self.number:02}{difficulty_string}"
