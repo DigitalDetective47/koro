@@ -123,7 +123,7 @@ class SaveSlot(Slot):
     def __repr__(self) -> str:
         return f"{type(self).__name__}({self.path!r}, {self.page!r}, {self.index!r})"
 
-    def save(self, data: Stage | None) -> None:
+    def save(self, data: Stage | None, /) -> None:
         binary: bytes = b"" if data is None else XmlSlot.serialize(data)
         if len(binary) > _SIZE_LIMIT:
             raise ValueError("serialized stage data is too large to save")

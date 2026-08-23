@@ -57,7 +57,7 @@ class FileSlot(Slot, ABC):
     def __repr__(self) -> str:
         return f"{type(self).__name__}({self.path!r})"
 
-    def save(self, data: Stage | None) -> None:
+    def save(self, data: Stage | None, /) -> None:
         if data is None:
             remove(self.path)
         else:
