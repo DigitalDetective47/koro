@@ -11,6 +11,7 @@ from .stage import *
 from .stage.model import *
 from .stage.part import *
 from .trophytable import *
+from .trophytable.file import *
 
 __all__ = [
     "Ant",
@@ -28,6 +29,7 @@ __all__ = [
     "EditorPage",
     "Fan",
     "FileSlot",
+    "FileTrophyTable",
     "FixedSpeedDevice",
     "Gear",
     "Goal",
@@ -60,6 +62,7 @@ __all__ = [
     "ToyTrain",
     "TrainTrack",
     "TrophyRow",
+    "TrophyTable",
     "Turntable",
     "UpsideDownBall",
     "UpsideDownStageDevice",

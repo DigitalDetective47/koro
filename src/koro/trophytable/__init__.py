@@ -1,8 +1,11 @@
-from collections.abc import Iterator
+from abc import ABC, abstractmethod
+from collections.abc import Iterator, Mapping
 from datetime import timedelta
 from typing import Any, Literal
 
-__all__ = ["TrophyRow"]
+from .. import StageID
+
+__all__ = ["TrophyRow", "TrophyTable"]
 
 
 class TrophyRow:
@@ -75,3 +78,15 @@ class TrophyRow:
     @property
     def silver(self) -> timedelta:
         return self._silver
+
+
+class TrophyTable(ABC):
+    __slots__ = ()
+
+    @abstractmethod
+    def load(self) -> Mapping[StageID, TrophyRow]:
+        pass
+
+    @abstractmethod
+    def save(self, data: Mapping[StageID, TrophyRow], /) -> None:
+        pass
