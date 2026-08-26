@@ -75,6 +75,12 @@ class TrophyRow:
     def __repr__(self) -> str:
         return f"{type(self).__name__}({self.platinum!r}, {self.gold!r}, {self.silver!r}, {self.bronze!r})"
 
+    def __reversed__(self) -> Iterator[timedelta]:
+        yield self.bronze
+        yield self.silver
+        yield self.gold
+        yield self.platinum
+
     @property
     def silver(self) -> timedelta:
         return self._silver
