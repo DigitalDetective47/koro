@@ -56,5 +56,5 @@ class FileTrophyTable(TrophyTable, ABC):
 
     @staticmethod
     @abstractmethod
-    def serialize(stage: Mapping[StageID, TrophyRow], /) -> bytes:
+    def serialize(trophies: Mapping[StageID, TrophyRow], /) -> bytes:
         pass
