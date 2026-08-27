@@ -1,17 +1,6 @@
-from enum import Enum, unique
+from enum import Enum, auto, unique
 from operator import index
 from typing import Any, Final, Optional, SupportsIndex
-
-from .slot import *
-from .slot.bin import *
-from .slot.file import *
-from .slot.save import *
-from .slot.xml import *
-from .stage import *
-from .stage.model import *
-from .stage.part import *
-from .trophytable import *
-from .trophytable.file import *
 
 __all__ = [
     "Ant",
@@ -75,30 +64,30 @@ __all__ = [
 class StageID:
     @unique
     class Difficulty(Enum):
-        EASY = 0
-        NORMAL = 1
-        HARD = 2
+        EASY = auto()
+        NORMAL = auto()
+        HARD = auto()
 
     @unique
     class Region(Enum):
-        THE_EMPTY_LOT = 1
-        NEIGHBORS_HOUSE = 2
-        SIZZLIN_DESERT = 3
-        CHILL_MOUNTAIN = 4
-        OCEAN_TREASURE = 5
-        SPACE_STATION = 6
-        STUMP_TEMPLE = 7
-        CANDY_ISLAND = 8
-        CANDY_ISLAND_2 = object()
-        HAUNTED_HOUSE = 9
-        HAUNTED_HOUSE_DARKNESS = 10
-        CITY = 11
-        NIGHT_CITY = 12
-        TUTORIAL = 13
-        WII_BALANCE_BOARD = 15
-        RANKING_STAGE = 16
-        HUDSON = 19
-        SURVIVAL = object()
+        THE_EMPTY_LOT = auto()
+        NEIGHBORS_HOUSE = auto()
+        SIZZLIN_DESERT = auto()
+        CHILL_MOUNTAIN = auto()
+        OCEAN_TREASURE = auto()
+        SPACE_STATION = auto()
+        STUMP_TEMPLE = auto()
+        CANDY_ISLAND = auto()
+        CANDY_ISLAND_2 = auto()
+        HAUNTED_HOUSE = auto()
+        HAUNTED_HOUSE_DARKNESS = auto()
+        CITY = auto()
+        NIGHT_CITY = auto()
+        TUTORIAL = auto()
+        WII_BALANCE_BOARD = auto()
+        RANKING_STAGE = auto()
+        HUDSON = auto()
+        SURVIVAL = auto()
 
         @property
         def num_stages(self) -> int:
@@ -230,3 +219,15 @@ class StageID:
                 self.Region.HUDSON: "Hudson",
             }[self.region]
             return f"{region_name} {self.number:02}{difficulty_string}"
+
+
+from .slot import *
+from .slot.bin import *
+from .slot.file import *
+from .slot.save import *
+from .slot.xml import *
+from .stage import *
+from .stage.model import *
+from .stage.part import *
+from .trophytable import *
+from .trophytable.file import *
