@@ -15,7 +15,6 @@ __all__ = [
     "DeviceModel",
     "Drawbridge",
     "EditUser",
-    "EditorPage",
     "Fan",
     "FileSlot",
     "FileTrophyTable",
@@ -87,6 +86,8 @@ class StageID:
         TUTORIAL = auto()
         WII_BALANCE_BOARD = auto()
         RANKING_STAGE = auto()
+        ORIGINAL = auto()
+        FRIEND = auto()
         HUDSON = auto()
         SURVIVAL = auto()
 
@@ -109,6 +110,8 @@ class StageID:
                 type(self).TUTORIAL: 10,
                 type(self).WII_BALANCE_BOARD: 100,
                 type(self).RANKING_STAGE: 10,
+                type(self).ORIGINAL: 20,
+                type(self).FRIEND: 20,
                 type(self).HUDSON: 20,
                 type(self).SURVIVAL: 8,
             }[self]
@@ -217,6 +220,8 @@ class StageID:
                 self.Region.TUTORIAL: "Tutorial",
                 self.Region.WII_BALANCE_BOARD: "Wii Balance Board",
                 self.Region.RANKING_STAGE: "Ranking Stage",
+                self.Region.ORIGINAL: "Original",
+                self.Region.FRIEND: "Friend",
                 self.Region.HUDSON: "Hudson",
             }[self.region]
             return f"{region_name} {self.number:02}{difficulty_string}"
