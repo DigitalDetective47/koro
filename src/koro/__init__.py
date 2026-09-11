@@ -44,6 +44,7 @@ __all__ = [
     "Slot",
     "Spring",
     "Stage",
+    "StageID",
     "Start",
     "Theme",
     "Thorn",
