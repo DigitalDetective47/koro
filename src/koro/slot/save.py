@@ -1,8 +1,8 @@
 from collections.abc import Mapping
 from io import BytesIO
-from os.path import basename, dirname, join
+from pathlib import Path
 from re import Match, fullmatch
-from typing import TYPE_CHECKING, Any, Final, Literal, Optional
+from typing import TYPE_CHECKING, Any, Final, Optional
 from warnings import warn
 
 from .. import StageID
@@ -11,9 +11,9 @@ from . import Slot
 from .xml import XmlSlot
 
 if TYPE_CHECKING:
-    from _typeshed import StrOrBytesPath
+    from _typeshed import StrPath
 else:
-    StrOrBytesPath = Any
+    StrPath = Any
 
 
 __all__ = ["SaveSlot"]
@@ -30,10 +30,10 @@ class SaveSlot(Slot):
     __match_args__ = ("path", "page", "stage_id")
     __slots__ = ("_offset", "_path")
 
-    _offset: Literal[8, 156872, 313736, 470600]
-    _path: str | bytes
+    _offset: int
+    _path: Path
 
-    def __init__(self, path: StrOrBytesPath, stage_id: StageID) -> None:
+    def __init__(self, path: StrPath, stage_id: StageID) -> None:
         if stage_id.region not in _REGION_OFFSETS.keys():
             raise ValueError(
                 "SaveSlots only support regions ORIGINAL, FRIEND, and HUDSON."
@@ -43,12 +43,18 @@ class SaveSlot(Slot):
                 "Modifications to Hudson 01-05 are ignored by the game. These stages are read from disc (/data/A19S00X.bin) and are empty by default when inspected with this library; writes made by this library will have no effect in-game.",
                 RuntimeWarning,
             )
-        self._offset = 8 + _SIZE_LIMIT * ((stage_id.number - 1) & 3)  # type: ignore[assignment]
-        self._path = join(path, f"ed{((stage_id.number - 1) >> 2) + _REGION_OFFSETS[stage_id.region]:02}.dat")  # type: ignore[arg-type]
+        self._offset = 8 + _SIZE_LIMIT * ((stage_id.number - 1) & 3)
+        path = Path(path).resolve(True)
+        if not path.is_dir():
+            raise NotADirectoryError("path did not resolve to a directory.")
+        self._path = (
+            path
+            / f"ed{((stage_id.number - 1) >> 2) + _REGION_OFFSETS[stage_id.region]:02}.dat"
+        )
 
     def __bool__(self) -> bool:
         try:
-            with open(self._path, "rb") as f:
+            with self._path.open("rb") as f:
                 f.seek(self._offset)
                 return f.read(1) != b"\x00"
         except FileNotFoundError:
@@ -65,7 +71,7 @@ class SaveSlot(Slot):
 
     def load(self) -> Stage | None:
         try:
-            with open(self._path, "rb") as f:
+            with self._path.open("rb") as f:
                 f.seek(self._offset)
                 with BytesIO() as b:
                     block: bytearray = bytearray()
@@ -90,8 +96,8 @@ class SaveSlot(Slot):
             return None
 
     @property
-    def path(self) -> StrOrBytesPath:
-        return dirname(self._path)
+    def path(self) -> Path:
+        return self._path.parent
 
     def __repr__(self) -> str:
         return f"{type(self).__name__}({self.path!r}, {self.stage_id!r})"
@@ -100,28 +106,22 @@ class SaveSlot(Slot):
         binary: bytes = b"" if data is None else XmlSlot.serialize(data)
         if len(binary) > _SIZE_LIMIT:
             raise ValueError("serialized stage data is too large to save")
-        try:
-            with open(self._path, "xb") as f:
-                f.write(
-                    bytes(638976)
+        if not self._path.is_file():
+            self._path.write_bytes(
+                bytes(
+                    638976
                 )  # Weird. Would expect this to be 627464 (8 + 4 * (_SIZE_LIMIT))
+            )
             if data is None:
                 return
-        except FileExistsError:
-            pass
-        with open(self._path, "r+b") as f:
+        with self._path.open("r+b") as f:
             f.seek(self._offset)
             f.write(binary)
             f.write(bytes(_SIZE_LIMIT - len(binary)))
 
     @property
     def stage_id(self) -> StageID:
-        path: str
-        if isinstance(self._path, str):
-            path = self._path
-        else:
-            path = self._path.decode(errors="ignore")
-        m: Final[Optional[Match]] = fullmatch(r"ed(\d{2})\.dat", basename(path))
+        m: Final[Optional[Match]] = fullmatch(r"ed(\d{2})\.dat", self._path.name)
         if m is None:
             raise ValueError(
                 "Final path component somehow doesn't end in an editor data filename."

@@ -1,15 +1,14 @@
 from abc import ABC, abstractmethod
-from os import remove
-from os.path import isfile
-from typing import TYPE_CHECKING, Any
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, Final
 
 from ..stage import Stage
 from . import Slot
 
 if TYPE_CHECKING:
-    from _typeshed import StrOrBytesPath
+    from _typeshed import StrPath
 else:
-    StrOrBytesPath = Any
+    StrPath = Any
 
 
 __all__ = ["FileSlot"]
@@ -19,13 +18,17 @@ class FileSlot(Slot, ABC):
     __match_args__ = ("path",)
     __slots__ = ("_path",)
 
-    _path: StrOrBytesPath
+    _path: Path
 
-    def __init__(self, path: StrOrBytesPath, /) -> None:
-        self._path = path
+    def __init__(self, path: StrPath, /) -> None:
+        parsed_path: Final[Path] = Path(path)
+        if parsed_path.is_file():
+            self._path = parsed_path.resolve(True)
+        else:
+            self._path = parsed_path.parent.resolve(True) / parsed_path.name
 
     def __bool__(self) -> bool:
-        return isfile(self.path)
+        return self.path.is_file()
 
     @staticmethod
     @abstractmethod
@@ -45,13 +48,12 @@ class FileSlot(Slot, ABC):
 
     def load(self) -> Stage | None:
         try:
-            with open(self.path, "rb") as f:
-                return self.deserialize(f.read())
+            return self.deserialize(self.path.read_bytes())
         except FileNotFoundError:
             return None
 
     @property
-    def path(self) -> StrOrBytesPath:
+    def path(self) -> Path:
         return self._path
 
     def __repr__(self) -> str:
@@ -59,10 +61,9 @@ class FileSlot(Slot, ABC):
 
     def save(self, data: Stage | None, /) -> None:
         if data is None:
-            remove(self.path)
+            self.path.unlink(True)
         else:
-            with open(self.path, "wb") as f:
-                f.write(self.serialize(data))
+            self.path.write_bytes(self.serialize(data))
 
     @staticmethod
     @abstractmethod
