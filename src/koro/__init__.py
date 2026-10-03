@@ -200,7 +200,7 @@ class StageID:
                 "Space Station",
                 "Stump Temple",
                 "All",
-            )[self.number]
+            )[self.number - 1]
             return f"Survival: {region_name}{difficulty_string}"
         else:
             region_name = {
