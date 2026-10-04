@@ -27,7 +27,7 @@ _SIZE_LIMIT: Final[int] = 156864
 
 
 class SaveSlot(Slot):
-    __match_args__ = ("path", "page", "stage_id")
+    __match_args__ = ("path", "stage_id")
     __slots__ = ("_offset", "_path")
 
     _offset: int
