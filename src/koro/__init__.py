@@ -13,6 +13,7 @@ __all__ = [
     "DashTunnel",
     "DecorationModel",
     "DeviceModel",
+    "DolTrophyTable",
     "Drawbridge",
     "EditUser",
     "Fan",
@@ -237,3 +238,4 @@ from .stage.model import *
 from .stage.part import *
 from .trophytable import *
 from .trophytable.file import *
+from .trophytable.dol import *
