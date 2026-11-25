@@ -48,7 +48,6 @@ from ..stage.part import (
     Turntable,
     UpsideDownBall,
     UpsideDownStageDevice,
-    Walls,
     Warp,
 )
 from .file import FileSlot
@@ -169,9 +168,11 @@ class XmlSlot(FileSlot):
                                     shape=PartModel.Tile20x20,
                                     speed=float(get_values(elem, "anmspd")[0]),
                                     walls=(
-                                        Walls(0)
+                                        MovingTile.Walls(0)
                                         if elem.find("hook") is None
-                                        else Walls(int(get_values(elem, "hook")[1]))
+                                        else MovingTile.Walls(
+                                            int(get_values(elem, "hook")[1])
+                                        )
                                     ),
                                 )
                             )
@@ -188,9 +189,11 @@ class XmlSlot(FileSlot):
                                     shape=PartModel.TileA30x30,
                                     speed=float(get_values(elem, "anmspd")[0]),
                                     walls=(
-                                        Walls(0)
+                                        MovingTile.Walls(0)
                                         if elem.find("hook") is None
-                                        else Walls(int(get_values(elem, "hook")[1]))
+                                        else MovingTile.Walls(
+                                            int(get_values(elem, "hook")[1])
+                                        )
                                     ),
                                 )
                             )
@@ -265,9 +268,11 @@ class XmlSlot(FileSlot):
                                     speed=float(get_values(elem, "anmspd")[0]),
                                     switch=True,
                                     walls=(
-                                        Walls(0)
+                                        MovingTile.Walls(0)
                                         if elem.find("hook") is None
-                                        else Walls(int(get_values(elem, "hook")[1]))
+                                        else MovingTile.Walls(
+                                            int(get_values(elem, "hook")[1])
+                                        )
                                     ),
                                 )
                             )
@@ -285,9 +290,11 @@ class XmlSlot(FileSlot):
                                     speed=float(get_values(elem, "anmspd")[0]),
                                     switch=True,
                                     walls=(
-                                        Walls(0)
+                                        MovingTile.Walls(0)
                                         if elem.find("hook") is None
-                                        else Walls(int(get_values(elem, "hook")[1]))
+                                        else MovingTile.Walls(
+                                            int(get_values(elem, "hook")[1])
+                                        )
                                     ),
                                 )
                             )

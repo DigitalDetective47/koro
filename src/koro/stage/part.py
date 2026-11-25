@@ -47,7 +47,6 @@ __all__ = [
     "Turntable",
     "UpsideDownBall",
     "UpsideDownStageDevice",
-    "Walls",
     "Warp",
 ]
 
@@ -260,16 +259,15 @@ class Speed(Enum):
     FAST = 23
 
 
-@unique
-class Walls(Flag):
-    BACK = 8
-    FRONT = 2
-    LEFT = 4
-    RIGHT = 1
-
-
 class MovingTile(BasePart):
     """A part that moves in a straight line."""
+
+    @unique
+    class Walls(Flag):
+        BACK = 8
+        FRONT = 2
+        LEFT = 4
+        RIGHT = 1
 
     __slots__ = (
         "_dest_x",

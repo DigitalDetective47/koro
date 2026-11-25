@@ -56,7 +56,6 @@ __all__ = [
     "Turntable",
     "UpsideDownBall",
     "UpsideDownStageDevice",
-    "Walls",
     "Warp",
     "XmlSlot",
 ]
